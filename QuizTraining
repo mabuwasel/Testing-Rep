@@ -1,0 +1,29 @@
+import random
+
+question_repo = {'Alabama': 'Montgomery', 'Alaska': 'Juneau', 'Arizona': 'Phoenix', 'Arkansas': 'Little Rock', 'California': 'Sacramento', 'Colorado': 'Denver', 'Connecticut': 'Hartford', 'Delaware': 'Dover', 'Florida': 'Tallahassee', 'Georgia': 'Atlanta', 'Hawaii': 'Honolulu', 'Idaho': 'Boise', 'Illinois': 'Springfield', 'Indiana': 'Indianapolis', 'Iowa': 'Des Moines', 'Kansas': 'Topeka', 'Kentucky': 'Frankfort', 'Louisiana': 'Baton Rouge', 'Maine': 'Augusta', 'Maryland': 'Annapolis', 'Massachusetts': 'Boston', 'Michigan': 'Lansing', 'Minnesota': 'Saint Paul', 'Mississippi': 'Jackson', 'Missouri': 'Jefferson City', 'Montana': 'Helena', 'Nebraska': 'Lincoln', 'Nevada': 'Carson City', 'New Hampshire': 'Concord', 'New Jersey': 'Trenton', 'New Mexico': 'Santa Fe', 'New York': 'Albany', 'North Carolina': 'Raleigh', 'North Dakota': 'Bismarck', 'Ohio': 'Columbus', 'Oklahoma': 'Oklahoma City', 'Oregon': 'Salem', 'Pennsylvania': 'Harrisburg', 'Rhode Island': 'Providence', 'South Carolina': 'Columbia', 'South Dakota': 'Pierre', 'Tennessee': 'Nashville', 'Texas': 'Austin', 'Utah': 'Salt Lake City', 'Vermont': 'Montpelier', 'Virginia': 'Richmond', 'Washington': 'Olympia', 'West Virginia': 'Charleston', 'Wisconsin': 'Madison', 'Wyoming': 'Cheyenne'}
+
+for quizNum in range(35):
+    quizFile=open(f'capitalsquiz{quizNum+1}.txt','w')
+    AnswerFile=open(f'answers{quizNum+1}.txt','w')
+
+    quizFile.write('Name:\nDate:\nPeriod:\n\n')
+    quizFile.write((''*20)+ f'State Capitals Quiz (Form{quizNum +1})')
+    quizFile.write('\n\n')
+    ran_questions = list(question_repo.keys())
+    random.shuffle(ran_questions)
+    counter=1
+    for i in ran_questions:
+        quizFile.write(f'\n\n{counter}.What is the capitol of {i}?\n\n')
+        AnswerFile.write(f'{counter}:{question_repo[i]}\n')
+        answer_repo=list(question_repo.values())
+        answer_list=random.sample(answer_repo,4)
+        counter+=1
+        if (question_repo[i] not in answer_list):
+            answer_list.pop()
+            answer_list.append(question_repo[i])
+        random.shuffle(answer_list)
+        for k in range(len(answer_list)):
+            quizFile.write(f'{k+1}. {answer_list[k]}\n')
+            quizFile.write('\n')
+    quizFile.write("\n")
+    
