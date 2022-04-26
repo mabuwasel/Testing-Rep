@@ -1,0 +1,32 @@
+#! /bin/bash
+
+first_threshold=1.0
+
+get_idle_cpu(){
+cpu_idle=$(mpstat | tail -1 | awk '{print $13}' | cut -f 1 -d " ")
+}
+
+cpu_usage(){
+get_idle_cpu
+cpu_use=$(echo "100.0 - ${cpu_idle}" | bc)
+}
+
+
+cpu_monitor(){
+	cpu_usage
+	if [ $(echo "${cpu_use} > ${first_threshold}" | bc) -eq 1 ]
+	then
+		$({
+			echo "Subject : Warning ! CPU Usage is High"
+			echo "Warning ! your current cpu usage (${cpu_use}%) is beyond threshold." 
+			}| /usr/sbin/ssmtp email@gmail.com)
+	else
+		$(
+			{ 
+			echo "Subject : CPU Usage is Fine" 
+			echo "All is good your current cpu usage is ${cpu_use}%."
+			}| /usr/sbin/ssmtp email@gmail.com)
+	fi
+}
+
+cpu_monitor
