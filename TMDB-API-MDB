@@ -1,0 +1,92 @@
+import imdb
+import requests
+import copy
+
+ia=imdb.IMDb()
+MOVIE_TITLE = None
+MOVIE_UID = None
+
+#lang=int(input("Enter the required language : 1-Enligsh 2-Russian 3-Espaneol"))
+
+def search(term):
+    global MOVIE_UID,MOVIE_TITLE
+    results=ia.search_movie(term)
+    search_results={}
+    new_search_results={}
+    for i in range(len(results)):
+        search_results[results[i]["title"]]=results[i].movieID
+    print(search_results)
+    if search_results:
+        index =0
+        search_list=[]
+        for movie in search_results:
+            index += 1
+            search_list.append(movie)
+            print(index, movie)
+        user_choice = int(input("please select the number of your movie "))
+        print("your choice is:", search_list[user_choice -1])
+        for i in search_results:
+            if i in search_list[user_choice]:
+                new_search_results = copy.deepcopy(search_results[search_list[user_choice -1]])
+                MOVIE_TITLE = search_list[user_choice -1]
+                MOVIE_UID = new_search_results
+                print(MOVIE_TITLE, MOVIE_UID)
+        return search_results
+    else:
+        print("no result")
+
+def get_poster(movieID):
+    api_key = "6a19b4d847818195166b6bc5fa671519"
+    print(f'https://api.themoviedb.org/3/movie/{movieID}/images?api_key={api_key}&language=ru')
+    response = requests.get(
+        f'https://api.themoviedb.org/3/movie/{movieID}/images?api_key={api_key}&language=ru')
+    fullresponse = response.json()
+    print(fullresponse)
+    posterPath = fullresponse["posters"][0]["file_path"]
+    global posterURL
+    posterURL = f'https://image.tmdb.org/t/p/w500{posterPath}'
+    return posterURL
+
+
+userInput=input("Enter the name of the movie:\n")
+
+movieSearchResults=search(userInput)
+
+if MOVIE_UID:
+    imdbMovieId=f'tt{MOVIE_UID}'
+    print(get_poster(imdbMovieId))
+else:
+    print("no result")
+
+from pymongo import MongoClient
+import datetime
+import gridfs
+
+cluster ="mongodb://localhost:27017/"
+client=MongoClient(cluster)
+posterdb=client.Posters
+
+
+
+url = posterURL
+r = requests.get(url, allow_redirects=True)
+open(f'{MOVIE_TITLE}', 'wb').write(r.content)
+
+fs = gridfs.GridFS(posterdb)
+
+def save_poster():
+    file = MOVIE_TITLE
+    with open(file, 'rb') as f:
+        contents = f.read()
+    fs.put(contents, filename=f'poster{imdbMovieId}',movie_name=MOVIE_TITLE,movie_id=imdbMovieId)
+
+def retrive_poster():
+    imageOb=fs.find_one({"movie_id":imdbMovieId}).read()
+
+    with open(f'poster-{imdbMovieId}'+".jpeg",'wb') as w:
+        w.write(imageOb)
+    return imageOb
+
+save_poster()
+
+retrive_poster()
